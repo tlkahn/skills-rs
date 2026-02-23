@@ -31,6 +31,15 @@ enum Commands {
         /// Paths to skill directories (or SKILL.md files)
         skill_paths: Vec<PathBuf>,
     },
+    /// Set properties in a SKILL.md file
+    #[command(name = "set-property")]
+    SetProperty {
+        /// Path to the skill directory (or SKILL.md file)
+        skill_path: PathBuf,
+        /// Properties to set (key=value format, e.g. description="New desc")
+        #[arg(required = true)]
+        properties: Vec<String>,
+    },
 }
 
 fn is_skill_md_file(path: &Path) -> bool {
@@ -89,6 +98,28 @@ fn main() {
                     process::exit(1);
                 }
             }
+        }
+        Commands::SetProperty {
+            skill_path,
+            properties,
+        } => {
+            let dir = resolve_skill_path(&skill_path);
+            let pairs: Vec<(String, String)> = match properties
+                .iter()
+                .map(|p| skills_ref::writer::parse_key_value(p))
+                .collect()
+            {
+                Ok(p) => p,
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    process::exit(1);
+                }
+            };
+            if let Err(e) = skills_ref::set_properties(&dir, &pairs) {
+                eprintln!("Error: {}", e);
+                process::exit(1);
+            }
+            println!("Properties updated in {}", dir.display());
         }
     }
 }
