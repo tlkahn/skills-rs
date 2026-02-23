@@ -1,0 +1,11 @@
+# Rust
+rs/target/
+
+# Python
+py/__pycache__/
+py/.venv/
+*.pyc
+
+# IDE / tools
+.claude/
+.DS_Store
